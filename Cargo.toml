@@ -4,4 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-rocket = "0.5.1"
+rocket = { version = "0.5.1", features = ["json"] }
+jsonwebtoken = "8"
+serde = { version = "1.0", features = ["derive"] }
+dotenvy = "*"
+cryptojs_rust = "0.1.4"
+base64 = "0.21"

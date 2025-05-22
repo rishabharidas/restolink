@@ -1,11 +1,11 @@
-#[macro_use] extern crate rocket;
+use crate::routes::auth::get_access;
 
-#[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
-}
+#[macro_use]
+extern crate rocket;
+
+mod routes;
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index])
+    rocket::build().mount("/api/v1", routes![get_access])
 }
