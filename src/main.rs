@@ -4,6 +4,7 @@ use crate::routes::auth::{get_access, register_user};
 extern crate rocket;
 
 mod routes;
+mod services;
 
 #[launch]
 fn rocket() -> _ {
