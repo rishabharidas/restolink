@@ -1,9 +1,9 @@
 use super::{LoginInfo, SignupInfo};
 use crate::services::secure::{encrypt_string, get_decrypted_string};
 use base64::{Engine, engine::general_purpose::STANDARD};
-// use cryptojs_rust::{CryptoOperation, Mode, aes::AesEncryptor};
-use rocket::{http::Status, serde::json::Json};
-use std::io::Result;
+use rocket::{State, http::Status, serde::json::Json}; 
+use sqlx::PgPool; 
+use std::io::Result; 
 
 #[post("/login", format = "json", data = "<body>")]
 pub fn get_access(body: Json<LoginInfo>) -> Result<Status> {
@@ -20,9 +20,34 @@ pub fn get_access(body: Json<LoginInfo>) -> Result<Status> {
 }
 
 #[post("/signup", format = "json", data = "<body>")]
-pub fn register_user(body: Json<SignupInfo>) -> Result<Json<bool>> {
+pub async fn register_user(
+    pool: &State<PgPool>,
+    body: Json<SignupInfo>,
+) -> std::result::Result<Json<bool>, Status> {
+
+    // FIX 1: encrypt_string should be awaited if async, but assuming it's sync for now.
     let encrypted = encrypt_string(&body.password).unwrap();
-    println!("{:?} <<<<<< saved password", encrypted);
+
+    // The pool is wrapped in State, so use pool.inner() to access the PgPool
+    let test_query_result = sqlx::query("SELECT 'Hello, World!'")
+        .execute(pool.inner()) // Use pool.inner() to pass the PgPool to execute
+        .await
+        .map_err(|e| {
+            eprintln!("Database error: {}", e);
+            Status::InternalServerError
+        })?; // Handle the error and convert it to a Status
+
+    // FIX 2: Correct println! macro usage. test_query_result is the variable you want to print.
+    println!("Test Query Result: {:?}", test_query_result);
+
+    // FIX 3: Variable 'res' was undeclared. It seems you intended to use 'encrypted' or the query result.
+    // If you were expecting the result of the query in 'res', use 'test_query_result'.
+    println!(
+        "{:?} <<<<<< saved password (Query result: {:?})",
+        encrypted, test_query_result
+    );
+
+    // TODO: Insert user into the database here using the pool
 
     Ok(Json(true))
 }

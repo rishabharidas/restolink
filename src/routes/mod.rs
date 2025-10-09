@@ -12,6 +12,6 @@ pub struct LoginInfo {
 pub struct SignupInfo {
     username: String,
     password: String,
-    position: String,
+    role: String,
     dob: String,
 }
