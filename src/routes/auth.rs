@@ -45,6 +45,10 @@ pub async fn register_user(
 ) -> std::result::Result<Json<AuthResponse>, Status> {
     let encrypted = encrypt_string(&body.password).unwrap();
 
+    // need to add validations,
+    // need to add common return reponse
+    // need to add seperete function to validate data from db with current
+
     let insert_user_query = sqlx::query_as::<_, UserInfo>("INSERT INTO restoapp.users (email, user_name, first_name, last_name, password, number, role) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, user_name, email, first_name, last_name, number")
         .bind(&body.email)
         .bind(&body.user_name)
