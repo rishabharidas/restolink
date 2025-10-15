@@ -11,6 +11,7 @@ cargo run
 current used env variables
 
 ```env
-PUBLIC_ENC_KEY=''
+PUBLIC_ENC_KEY=""
 DATABASE_URL="postgres://<username>:<password>@localhost/<db_name>"
+JWT_SECRET=""
 ```
