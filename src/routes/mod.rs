@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
 pub mod auth;
+pub mod user;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LoginInfo {

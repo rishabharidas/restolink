@@ -1,18 +1,15 @@
-use dotenvy::dotenv;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::{env, io::Result};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Claims {
+struct Claims {
     sub: String,
     exp: i64,
 }
 
 pub fn generate_jwt_token(user_id: i32) -> Result<String> {
-    dotenv().ok();
-
     let jwt_secret_key = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
     let current_time = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -33,8 +30,6 @@ pub fn generate_jwt_token(user_id: i32) -> Result<String> {
 }
 
 pub fn decode_jwt_token(token: &str) -> Result<Claims> {
-    dotenv().ok();
-
     let jwt_secret_key = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
     let token_data = decode::<Claims>(
         token,
