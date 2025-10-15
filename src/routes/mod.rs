@@ -1,3 +1,4 @@
+use rocket::http::Status;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
@@ -11,8 +12,22 @@ pub struct LoginInfo {
 
 #[derive(Debug, FromRow, Serialize)]
 pub struct BasicAuth {
-    pub user_name: String,
-    pub password: String,
+    user_name: String,
+    password: String,
+    id: i32,
+}
+
+#[derive(Serialize)]
+pub struct AuthResponse {
+    status: Status,
+    message: String,
+    data: UserInfo,
+}
+
+#[derive(Serialize)]
+pub struct LoginResponse {
+    status: Status,
+    auth: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
