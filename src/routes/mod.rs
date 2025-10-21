@@ -50,4 +50,5 @@ pub struct UserInfo {
     pub email: String,
     pub number: i64,
     pub id: i32,
+    pub role: String,
 }

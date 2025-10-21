@@ -1,14 +1,29 @@
-use crate::services::user::get::get_user_details;
+use super::AuthResponse;
+use crate::services::{jwt::ApiKey, user::get::get_user_details};
 
-use rocket::{http::Status, serde::json::Json};
+use rocket::{State, http::Status, serde::json::Json};
 use sqlx::PgPool;
 use std::result::Result;
 
 #[get("/user/<id>")]
-pub fn get_user_data(id: &str) -> Result<Status, Status> {
+pub async fn get_user_data(
+    pool: &State<PgPool>,
+    id: &str,
+    key: ApiKey,
+) -> Result<Json<AuthResponse>, Status> {
     // Retrieve user details from database or other data source
-    get_user_details(id);
+    let user_details = get_user_details(pool, id)
+        .await
+        .expect("failed to fectch user details");
+
+    if key.sub != id {
+        return Err(Status::Forbidden);
+    }
 
     // Return user details as JSON response
-    Ok(Status::Ok)
+    Ok(Json(AuthResponse {
+        status: Status::Ok,
+        message: String::from("User Details fetched successfully"),
+        data: user_details,
+    }))
 }

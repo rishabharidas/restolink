@@ -1,12 +1,19 @@
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
+use rocket::http::Status;
+use rocket::request::{FromRequest, Outcome, Request};
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::{env, io::Result};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-struct Claims {
+pub struct Claims {
     sub: String,
     exp: i64,
+}
+
+pub struct ApiKey {
+    pub sub: String,
+    pub exp: i64,
 }
 
 pub fn generate_jwt_token(user_id: i32) -> Result<String> {
@@ -38,4 +45,56 @@ pub fn decode_jwt_token(token: &str) -> Result<Claims> {
     )
     .expect("token decoding failed");
     Ok(token_data.claims)
+}
+
+#[derive(Debug)]
+pub enum ApiKeyError {
+    Missing,
+    Invalid,
+}
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for ApiKey {
+    type Error = ApiKeyError;
+
+    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        let auth_header_value = req.headers().get_one("Authorization");
+
+        // 2. Check if the header exists
+        let header_value = match auth_header_value {
+            Some(v) => v,
+            None => return Outcome::Error((Status::BadRequest, ApiKeyError::Missing)),
+        };
+
+        let token = header_value.strip_prefix("Bearer ");
+
+        let token_value = match token {
+            Some(v) => v,
+            None => return Outcome::Error((Status::BadRequest, ApiKeyError::Missing)),
+        };
+
+        let is_valid = validate_token(token_value).await;
+
+        match is_valid {
+            Some(Claims { sub, exp }) => {
+                // Correctly destructure the ApiKey struct
+                // Token is valid! Return the Guard instance.
+                Outcome::Success(ApiKey { sub, exp })
+            }
+            None => {
+                // Token is invalid or expired.
+                Outcome::Error((Status::BadRequest, ApiKeyError::Missing))
+            }
+        }
+    }
+}
+
+async fn validate_token(token: &str) -> Option<Claims> {
+    let decoded_token_data = decode_jwt_token(token);
+    println!("{:?}", decoded_token_data);
+    if token.len() > 10 {
+        Some(decoded_token_data.unwrap())
+    } else {
+        None
+    }
 }

@@ -11,3 +11,4 @@ cryptojs_rust = "0.1.4"
 base64 = "0.21"
 sqlx = { version = "0.8", features = [ "runtime-tokio", "tls-rustls-aws-lc-rs", "postgres" ] }
 jsonwebtoken = { version = "10", features = ["aws_lc_rs"] }
+garde = { version = "0.22.0", features = ["full"] }
