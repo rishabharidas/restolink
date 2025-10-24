@@ -1,5 +1,8 @@
 use super::AuthResponse;
-use crate::services::{jwt::ApiKey, user::get::get_user_details};
+use crate::services::{
+    jwt::{ApiKey, AuthToken},
+    user::get::get_user_details,
+};
 
 use rocket::{State, http::Status, serde::json::Json};
 use sqlx::PgPool;
@@ -9,14 +12,15 @@ use std::result::Result;
 pub async fn get_user_data(
     pool: &State<PgPool>,
     id: &str,
-    key: ApiKey,
+    auth: AuthToken,
+    _key: ApiKey,
 ) -> Result<Json<AuthResponse>, Status> {
     // Retrieve user details from database or other data source
     let user_details = get_user_details(pool, id)
         .await
         .expect("failed to fectch user details");
 
-    if key.sub != id {
+    if auth.sub != id {
         return Err(Status::Forbidden);
     }
 

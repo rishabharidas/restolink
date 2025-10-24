@@ -1,6 +1,6 @@
 use super::{AuthResponse, BasicAuth, LoginInfo, LoginResponse, SignupInfo, UserInfo};
 use crate::services::{
-    jwt::generate_jwt_token,
+    jwt::{ApiKey, generate_jwt_token},
     secure::{encrypt_string, get_decrypted_string},
 };
 use base64::{Engine, engine::general_purpose::STANDARD};
@@ -12,6 +12,7 @@ use std::result::Result;
 pub async fn get_access(
     pool: &State<PgPool>,
     body: Json<LoginInfo>,
+    _key: ApiKey,
 ) -> Result<Json<LoginResponse>, Status> {
     let login_password_b64 = STANDARD.encode(&body.password);
 
@@ -48,6 +49,7 @@ pub async fn get_access(
 pub async fn register_user(
     pool: &State<PgPool>,
     body: Json<SignupInfo>,
+    _key: ApiKey,
 ) -> Result<Json<AuthResponse>, Status> {
     let encrypted = encrypt_string(&body.password).unwrap();
 

@@ -14,4 +14,5 @@ current used env variables
 PUBLIC_ENC_KEY=""
 DATABASE_URL="postgres://<username>:<password>@localhost/<db_name>"
 JWT_SECRET=""
+API_KEY=""
 ```
