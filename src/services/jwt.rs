@@ -1,4 +1,6 @@
+use crate::services::redis_store::is_token_blacklisted;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
+use rocket::State;
 use rocket::http::Status;
 use rocket::request::{FromRequest, Outcome, Request};
 use serde::{Deserialize, Serialize};
@@ -14,6 +16,8 @@ pub struct Claims {
 pub struct AuthToken {
     pub sub: String,
     pub exp: i64,
+    // raw token string (original Bearer token) for operations like logout/blacklisting
+    pub raw: String,
 }
 
 pub struct ApiKey;
@@ -79,9 +83,35 @@ impl<'r> FromRequest<'r> for AuthToken {
 
         match is_valid {
             Some(Claims { sub, exp }) => {
-                // Correctly destructure the ApiKey struct
-                // Token is valid! Return the Guard instance.
-                Outcome::Success(AuthToken { sub, exp })
+                // Check if token is blacklisted in Redis
+                let redis_pool = match req.guard::<&State<deadpool_redis::Pool>>().await {
+                    Outcome::Success(pool) => pool,
+                    _ => {
+                        return Outcome::Error((
+                            Status::InternalServerError,
+                            AuthTokenError::Invalid,
+                        ));
+                    }
+                };
+
+                match is_token_blacklisted(redis_pool.inner(), token_value).await {
+                    Ok(true) => {
+                        // Token is blacklisted! Reject.
+                        Outcome::Error((Status::Unauthorized, AuthTokenError::Invalid))
+                    }
+                    Ok(false) => {
+                        // Token is valid and not blacklisted!
+                        Outcome::Success(AuthToken {
+                            sub,
+                            exp,
+                            raw: token_value.to_string(),
+                        })
+                    }
+                    Err(_) => {
+                        // Redis connection error
+                        Outcome::Error((Status::InternalServerError, AuthTokenError::Invalid))
+                    }
+                }
             }
             None => {
                 // Token is invalid or expired.

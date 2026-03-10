@@ -28,6 +28,7 @@ pub struct AuthResponse {
 #[derive(Serialize)]
 pub struct LoginResponse {
     status: Status,
+    message: String,
     auth: String,
 }
 
