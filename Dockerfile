@@ -1,35 +1,33 @@
-FROM docker.io/rust:1-slim-bookworm AS build
-
-## cargo package name: customize here or provide via --build-arg
-ARG pkg=restolink
-
-WORKDIR /build
-
-COPY . .
-
-RUN --mount=type=cache,target=/build/target \
-    --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/usr/local/cargo/git \
-    set -eux; \
-    cargo build --release; \
-    objcopy --compress-debug-sections target/release/$pkg ./main
-
-################################################################################
-
-FROM docker.io/debian:bookworm-slim
+# Stage 1: Build the Go binary
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
-## copy the main binary
-COPY --from=build /build/main ./
+# Install git and build dependencies
+RUN apk add --no-cache git ca-certificates
 
-## copy runtime assets which may or may not exist
-COPY --from=build /build/Rocket.tom[l] ./static
-COPY --from=build /build/stati[c] ./static
-COPY --from=build /build/template[s] ./templates
+# Cache dependencies
+COPY go.mod ./
+RUN go mod download || true
 
-## ensure the container listens globally on port 8080
-ENV ROCKET_ADDRESS=0.0.0.0
-ENV ROCKET_PORT=8080
+# Copy source
+COPY . .
 
-CMD ./main
+# Download dependencies and tidy
+RUN go mod tidy
+
+# Build static binary
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/restolink ./cmd/api
+
+# Stage 2: Minimal runtime image
+FROM alpine:3.20
+
+WORKDIR /app
+
+RUN apk add --no-cache ca-certificates tzdata
+
+COPY --from=builder /app/restolink /app/restolink
+
+EXPOSE 8080
+
+CMD ["/app/restolink"]
