@@ -46,6 +46,7 @@ func main() {
 	menuHandler := handlers.NewMenuHandler(pgDB.Pool)
 	orderHandler := handlers.NewOrderHandler(pgDB.Pool, hub)
 	deliveryHandler := handlers.NewDeliveryHandler(pgDB.Pool, redisClient.Client, hub)
+	tableHandler := handlers.NewTableHandler(pgDB.Pool, redisClient.Client, hub)
 	authHandler := handlers.NewAuthHandler(pgDB.Pool, cfg.JWTSecret)
 	wsHandler := handlers.NewWSHandler(hub)
 
@@ -72,6 +73,12 @@ func main() {
 		api.Get("/tenant/config", tenantHandler.GetConfig)
 		api.Get("/menu", menuHandler.GetMenu)
 		api.Get("/table/qr/{token}", menuHandler.ResolveTableQR)
+
+		// Table Multiplayer Cart & Service Bell (Milestone 2)
+		api.Post("/table/{id}/bell", tableHandler.RingBell)
+		api.Get("/table/{id}/cart", tableHandler.GetTableCart)
+		api.Post("/table/{id}/cart", tableHandler.SyncTableCart)
+		api.Post("/table/generate-qr", tableHandler.GenerateTableQR)
 
 		// Authentication
 		api.Post("/auth/login", authHandler.Login)
