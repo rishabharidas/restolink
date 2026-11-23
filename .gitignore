@@ -1,3 +1,10 @@
 /target
 /target/*
 .env
+api
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/

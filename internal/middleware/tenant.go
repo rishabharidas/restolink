@@ -32,7 +32,7 @@ func TenantMiddleware(pool *pgxpool.Pool, rootDomain string) func(http.Handler) 
 				tenantSlug = r.URL.Query().Get("tenant")
 			}
 
-			// 3. Check Subdomain (e.g. royal-spice.resto.local)
+			// 3. Check Subdomain (e.g. test-resto.resto.local)
 			if tenantSlug == "" {
 				host := r.Host
 				if colon := strings.Index(host, ":"); colon != -1 {
@@ -43,9 +43,9 @@ func TenantMiddleware(pool *pgxpool.Pool, rootDomain string) func(http.Handler) 
 				}
 			}
 
-			// Fallback: Default to demo tenant if none specified (for local dev)
+			// Fallback: Default to demo test tenant if none specified (for local dev)
 			if tenantSlug == "" {
-				tenantSlug = "royal-spice"
+				tenantSlug = "test-resto"
 			}
 
 			// Query tenant from DB

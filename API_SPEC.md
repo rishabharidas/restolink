@@ -7,8 +7,8 @@ This specification defines the production REST and WebSocket contracts for the m
 Every incoming API request is resolved against a restaurant tenant:
 
 ```http
-X-Tenant-Slug: royal-spice
-# or resolved from Host header: royal-spice.resto.com
+X-Tenant-Slug: test-resto
+# or resolved from Host header: test-resto.resto.com
 Authorization: Bearer <jwt_token> (Optional for Guest Dine-In QR)
 ```
 
@@ -46,7 +46,7 @@ Authorization: Bearer <jwt_token> (Optional for Guest Dine-In QR)
   {
     "phone": "+919876543210",
     "name": "Arun",
-    "table_token": "qr_token_table_1_royal_spice"
+    "table_token": "qr_token_table_1_test_resto"
   }
   ```
 - **Response (200 OK):**
@@ -70,7 +70,7 @@ Authorization: Bearer <jwt_token> (Optional for Guest Dine-In QR)
   ```json
   {
     "id": "a0000000-0000-0000-0000-000000000001",
-    "name": "The Royal Spice Restaurant",
+    "name": "Test Restaurant",
     "branding": {
       "primary_color": "#e11d48",
       "secondary_color": "#1e293b",
@@ -141,7 +141,7 @@ Authorization: Bearer <jwt_token> (Optional for Guest Dine-In QR)
     "subtotal": 560.00,
     "tax_amount": 28.00,
     "total_amount": 588.00,
-    "tracking_url": "https://royal-spice.resto.com/track/ord_1029384"
+    "tracking_url": "https://test-resto.resto.com/track/ord_1029384"
   }
   ```
 
