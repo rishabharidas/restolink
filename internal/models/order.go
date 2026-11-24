@@ -33,16 +33,20 @@ const (
 )
 
 type OrderItem struct {
-	ID                  uuid.UUID   `json:"id"`
-	OrderID             uuid.UUID   `json:"order_id"`
-	ItemID              uuid.UUID   `json:"item_id"`
-	ItemName            string      `json:"item_name,omitempty"`
-	Quantity            int         `json:"quantity"`
-	UnitPrice           float64     `json:"unit_price"`
-	ItemTotal           float64     `json:"item_total"`
-	ItemStatus          OrderStatus `json:"item_status"`
-	SpecialInstructions string      `json:"special_instructions,omitempty"`
-	CreatedAt           time.Time   `json:"created_at"`
+	ID                  uuid.UUID            `json:"id"`
+	OrderID             uuid.UUID            `json:"order_id"`
+	ItemID              uuid.UUID            `json:"item_id"`
+	ItemName            string               `json:"item_name,omitempty"`
+	Quantity            int                  `json:"quantity"`
+	UnitPrice           float64              `json:"unit_price"`
+	ItemTotal           float64              `json:"item_total"`
+	ItemStatus          OrderStatus          `json:"item_status"`
+	AssignedStation     string               `json:"assigned_station"`
+	SpecialInstructions string               `json:"special_instructions,omitempty"`
+	KitchenNotes        string               `json:"kitchen_notes,omitempty"`
+	CompletedAt         *time.Time           `json:"completed_at,omitempty"`
+	SelectedModifiers   []ItemModifierOption `json:"selected_modifiers,omitempty"`
+	CreatedAt           time.Time            `json:"created_at"`
 }
 
 type Order struct {
@@ -58,6 +62,7 @@ type Order struct {
 	CustomerName        string       `json:"customer_name,omitempty"`
 	CustomerPhone       string       `json:"customer_phone,omitempty"`
 	WaiterID            *uuid.UUID   `json:"waiter_id,omitempty"`
+	IdempotencyKey      *string      `json:"idempotency_key,omitempty"`
 	SpecialInstructions string       `json:"special_instructions,omitempty"`
 	Subtotal            float64      `json:"subtotal"`
 	TaxAmount           float64      `json:"tax_amount"`

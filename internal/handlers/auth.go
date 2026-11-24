@@ -63,6 +63,15 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Verify tenant isolation for non-superadmin users
+	activeTenantID := middleware.GetTenantID(r.Context())
+	if activeTenantID != uuid.Nil && user.RoleName != "superadmin" {
+		if user.TenantID == nil || *user.TenantID != activeTenantID {
+			http.Error(w, `{"error":"forbidden","message":"user does not belong to this restaurant"}`, http.StatusForbidden)
+			return
+		}
+	}
+
 	// Generate JWT
 	claims := middleware.AuthClaims{
 		UserID:   user.ID,
@@ -90,5 +99,14 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 			"last_name":  user.LastName,
 			"role":       user.RoleName,
 		},
+	})
+}
+
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "session logged out successfully",
 	})
 }

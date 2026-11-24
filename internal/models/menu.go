@@ -12,6 +12,12 @@ type ItemModifierOption struct {
 	PriceDiff float64 `json:"price_diff"`
 }
 
+type ItemVariant struct {
+	ID              string  `json:"id"`
+	Name            string  `json:"name"`
+	PriceAdjustment float64 `json:"price_adjustment"`
+}
+
 type ItemModifierGroup struct {
 	ID         string               `json:"id"`
 	Name       string               `json:"name"` // e.g. "Size", "Spice Level", "Add-ons"
@@ -42,9 +48,23 @@ type MenuItem struct {
 	ImageURL            string              `json:"image_url,omitempty"`
 	IsAvailable         bool                `json:"is_available"`
 	KitchenStation      string              `json:"kitchen_station"`
+	AssignedStations    []string            `json:"assigned_stations"`
+	Allergens           []string            `json:"allergens"`
 	PreparationTimeMins int                 `json:"preparation_time_mins"`
+	Variants            []ItemVariant       `json:"variants,omitempty"`
 	Modifiers           []ItemModifierGroup `json:"modifiers,omitempty"`
 	CreatedAt           time.Time           `json:"created_at"`
+}
+
+type OutletMenuItem struct {
+	ID          uuid.UUID `json:"id"`
+	TenantID    uuid.UUID `json:"tenant_id"`
+	OutletID    uuid.UUID `json:"outlet_id"`
+	ItemID      uuid.UUID `json:"item_id"`
+	Price       float64   `json:"price"`
+	IsAvailable bool      `json:"is_available"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type RestaurantTable struct {

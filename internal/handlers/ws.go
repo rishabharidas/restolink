@@ -18,16 +18,37 @@ func NewWSHandler(hub *realtime.Hub) *WSHandler {
 
 func (h *WSHandler) HandleConnection(w http.ResponseWriter, r *http.Request) {
 	// Parse room query parameters, e.g. /ws?rooms=tenant:123,order:456
-	var rooms []string
-
+	var rawRooms []string
 	if roomsParam := r.URL.Query().Get("rooms"); roomsParam != "" {
-		rooms = strings.Split(roomsParam, ",")
+		rawRooms = strings.Split(roomsParam, ",")
 	}
 
-	// Also automatically join the current tenant room if resolved
-	if t := middleware.GetTenantFromContext(r.Context()); t != nil {
-		rooms = append(rooms, "tenant:"+t.ID.String())
+	t := middleware.GetTenantFromContext(r.Context())
+	var sanitizedRooms []string
+
+	if t != nil {
+		activeTenantRoom := "tenant:" + t.ID.String()
+		sanitizedRooms = append(sanitizedRooms, activeTenantRoom)
+
+		for _, room := range rawRooms {
+			room = strings.TrimSpace(room)
+			if room == "" || room == activeTenantRoom {
+				continue
+			}
+			// Security: Block joining foreign tenant rooms
+			if strings.HasPrefix(room, "tenant:") {
+				continue
+			}
+			sanitizedRooms = append(sanitizedRooms, room)
+		}
+	} else {
+		for _, room := range rawRooms {
+			room = strings.TrimSpace(room)
+			if room != "" {
+				sanitizedRooms = append(sanitizedRooms, room)
+			}
+		}
 	}
 
-	realtime.ServeWs(h.hub, w, r, rooms)
+	realtime.ServeWs(h.hub, w, r, sanitizedRooms)
 }
